@@ -351,17 +351,17 @@ function appendText(parent, text, ansi) {
 docker compose up -d --build
 
 # Modal + swatches still in DOM
-curl -sS http://localhost:${PORT:-8088}/tool.php | grep -q 'id="modal"'          && echo OK modal
-curl -sS http://localhost:${PORT:-8088}/tool.php | grep -q 'class="swatch fg"'  && echo OK fg swatch
-curl -sS http://localhost:${PORT:-8088}/tool.php | grep -q 'class="swatch bg"'  && echo OK bg swatch
-curl -sS http://localhost:${PORT:-8088}/tool.php | grep -q 'class="swatch bold"'&& echo OK bold swatch
-curl -sS http://localhost:${PORT:-8088}/tool.php | grep -q 'id="btn-import"'    && echo OK import btn
+curl -sS http://localhost:${HTTP_PORT:-80}/tool.php | grep -q 'id="modal"'          && echo OK modal
+curl -sS http://localhost:${HTTP_PORT:-80}/tool.php | grep -q 'class="swatch fg"'  && echo OK fg swatch
+curl -sS http://localhost:${HTTP_PORT:-80}/tool.php | grep -q 'class="swatch bg"'  && echo OK bg swatch
+curl -sS http://localhost:${HTTP_PORT:-80}/tool.php | grep -q 'class="swatch bold"'&& echo OK bold swatch
+curl -sS http://localhost:${HTTP_PORT:-80}/tool.php | grep -q 'id="btn-import"'    && echo OK import btn
 
 # tool.js syntax (if node available)
 node --check public/assets/js/tool.js && echo "OK tool.js syntax"
 
 # tool.css includes pulse-highlight keyframe
-curl -sS http://localhost:${PORT:-8088}/assets/css/tool.css | grep -q 'pulse-highlight' && echo OK keyframe
+curl -sS http://localhost:${HTTP_PORT:-80}/assets/css/tool.css | grep -q 'pulse-highlight' && echo OK keyframe
 ```
 
 **Browser DevTools test (after loading `/tool.php`):**

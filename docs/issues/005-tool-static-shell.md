@@ -261,7 +261,7 @@ window.PS1_PALETTE = {
 docker compose up -d --build
 
 # Page renders, has expected DOM hooks
-curl -sS http://localhost:${PORT:-8088}/tool.php -o /tmp/tool.html
+curl -sS http://localhost:${HTTP_PORT:-80}/tool.php -o /tmp/tool.html
 grep -q 'id="ps1-preview"'   /tmp/tool.html && echo OK preview
 grep -q 'id="ps1-raw"'      /tmp/tool.html && echo OK raw
 grep -q 'id="btn-copy"'     /tmp/tool.html && echo OK copy
@@ -273,13 +273,13 @@ grep -q 'class="swatch fg"' /tmp/tool.html && echo OK fg swatch
 grep -q 'class="swatch bg"' /tmp/tool.html && echo OK bg swatch
 
 # palette.js is loadable + exposes the global
-curl -sS http://localhost:${PORT:-8088}/assets/js/palette.js | grep -q 'window.PS1_PALETTE' && echo OK palette.js
+curl -sS http://localhost:${HTTP_PORT:-80}/assets/js/palette.js | grep -q 'window.PS1_PALETTE' && echo OK palette.js
 
 # tool.js loads without syntax errors (use node if available; else just curl and grep)
-curl -sS http://localhost:${PORT:-8088}/assets/js/tool.js | grep -q 'PS1 controller' && echo OK tool.js
+curl -sS http://localhost:${HTTP_PORT:-80}/assets/js/tool.js | grep -q 'PS1 controller' && echo OK tool.js
 
 # palette mirror matches token count
-SERVER_COUNT=$(curl -sS http://localhost:${PORT:-8088}/data/tokens.json | jq '.tokens | length')
+SERVER_COUNT=$(curl -sS http://localhost:${HTTP_PORT:-80}/data/tokens.json | jq '.tokens | length')
 CHIP_COUNT=$(grep -o 'class="chip"' /tmp/tool.html | wc -l)
 [ "$SERVER_COUNT" = "$CHIP_COUNT" ] && echo "OK chip count = $SERVER_COUNT"
 

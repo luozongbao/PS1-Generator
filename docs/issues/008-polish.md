@@ -19,7 +19,7 @@ automated drift check between `data/tokens.json` and `assets/js/palette.js`.
 | Path                              | Change                                                       |
 |-----------------------------------|--------------------------------------------------------------|
 | `README.md`                       | Quick-start: clone, cp .env, docker compose up, open URL.    |
-| `.env.example`                    | Document `PORT=8088` (already in 001; flesh out if minimal). |
+| `.env.example`                    | Already documents `HTTP_PORT`, `HTTPS_PORT`, `OLS_ADMIN_USER`, `OLS_ADMIN_PASSWORD`; flesh out any new vars added across 002–007. |
 | `public/assets/js/tool.js`        | Add keyboard shortcuts + a small `?` help `<dialog>`.         |
 | `public/assets/css/tool.css`      | Rules for help dialog, `prefers-reduced-motion` final pass.   |
 | `scripts/check-palette-drift.sh`  | CI-style shell script that fails if `palette.js` drifts.     |
@@ -112,7 +112,7 @@ A self-hosted tool + reference for building Bash PS1 prompts.
 
     cp .env.example .env
     docker compose up -d --build
-    open http://localhost:${PORT:-8088}/
+    open http://localhost:${HTTP_PORT:-80}/
 
 ## Pages
 
@@ -205,7 +205,7 @@ either works):
 docker compose up -d --build
 
 # Help dialog is in the markup
-curl -sS http://localhost:${PORT:-8088}/tool.php | grep -q 'id="help-dialog"' && echo OK help dialog
+curl -sS http://localhost:${HTTP_PORT:-80}/tool.php | grep -q 'id="help-dialog"' && echo OK help dialog
 
 # README and .env.example exist and are non-empty
 [ -s README.md ]          && echo OK README
@@ -217,7 +217,7 @@ curl -sS http://localhost:${PORT:-8088}/tool.php | grep -q 'id="help-dialog"' &&
 
 # Lighthouse a11y ≥ 90 (if lighthouse CLI is installed)
 which lighthouse >/dev/null && \
-  lighthouse http://localhost:${PORT:-8088}/learn.php --quiet --chrome-flags="--headless" \
+  lighthouse http://localhost:${HTTP_PORT:-80}/learn.php --quiet --chrome-flags="--headless" \
     --only-categories=accessibility | grep -q '"score":\s*0\.9' && echo OK lighthouse a11y
 
 docker compose down

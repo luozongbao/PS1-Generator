@@ -118,13 +118,13 @@ foreach ($PS1_TOKENS as $t) {
 
 ```bash
 docker compose up -d --build
-curl -sS http://localhost:${PORT:-8088}/data/tokens.json | jq '.tokens | length'
+curl -sS http://localhost:${HTTP_PORT:-80}/data/tokens.json | jq '.tokens | length'
 # expect: 18  (the 16 codes + \[ + \])
 
-curl -sS http://localhost:${PORT:-8088}/data/tokens.json | jq '.colors.fg | length'
+curl -sS http://localhost:${HTTP_PORT:-80}/data/tokens.json | jq '.colors.fg | length'
 # expect: 8
 
-curl -sS http://localhost:${PORT:-8088}/_smoke_tokens.php | head
+curl -sS http://localhost:${HTTP_PORT:-80}/_smoke_tokens.php | head
 # expect:
 # version=1
 # tokens=18

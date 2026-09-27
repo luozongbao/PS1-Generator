@@ -130,15 +130,15 @@ require __DIR__ . '/includes/header.php';
 
 ```bash
 docker compose up -d --build
-curl -sS http://localhost:${PORT:-8088}/             | grep -q "Welcome"     && echo OK index
-curl -sS http://localhost:${PORT:-8088}/test.php     | grep -q "test ok"     && echo OK test
-curl -sS http://localhost:${PORT:-8088}/assets/css/base.css  | grep -q -- "--bg-page"     && echo OK base css
-curl -sS http://localhost:${PORT:-8088}/assets/css/layout.css | grep -q "site-header"      && echo OK layout css
-curl -sS http://localhost:${PORT:-8088}/             | grep -q 'href="/assets/img/favicon.svg"' && echo OK favicon link
+curl -sS http://localhost:${HTTP_PORT:-80}/             | grep -q "Welcome"     && echo OK index
+curl -sS http://localhost:${HTTP_PORT:-80}/test.php     | grep -q "test ok"     && echo OK test
+curl -sS http://localhost:${HTTP_PORT:-80}/assets/css/base.css  | grep -q -- "--bg-page"     && echo OK base css
+curl -sS http://localhost:${HTTP_PORT:-80}/assets/css/layout.css | grep -q "site-header"      && echo OK layout css
+curl -sS http://localhost:${HTTP_PORT:-80}/             | grep -q 'href="/assets/img/favicon.svg"' && echo OK favicon link
 docker compose down
 ```
 
-Also visually: open `http://localhost:${PORT:-8088}/` in a browser.
+Also visually: open `http://localhost:${HTTP_PORT:-80}/` in a browser.
 Background must be near-black, top nav must show `PS1 Generator` on the
 left and `Tool · Learn` on the right, the active page should be
 visually highlighted.

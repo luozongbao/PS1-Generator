@@ -262,11 +262,11 @@ docker compose up -d --build
 # If node is available:
 which node && node --check public/assets/js/tool.js && echo "OK tool.js syntax"
 # Otherwise curl + ensure the IIFE wraps everything
-curl -sS http://localhost:${PORT:-8088}/assets/js/tool.js | grep -q "(function () {"  && echo OK IIFE
+curl -sS http://localhost:${HTTP_PORT:-80}/assets/js/tool.js | grep -q "(function () {"  && echo OK IIFE
 
 # Page references the script and the IDs are present
-curl -sS http://localhost:${PORT:-8088}/tool.php | grep -q '/assets/js/tool.js'    && echo OK tool.js included
-curl -sS http://localhost:${PORT:-8088}/tool.php | grep -q 'id="ps1-raw"'          && echo OK raw id
+curl -sS http://localhost:${HTTP_PORT:-80}/tool.php | grep -q '/assets/js/tool.js'    && echo OK tool.js included
+curl -sS http://localhost:${HTTP_PORT:-80}/tool.php | grep -q 'id="ps1-raw"'          && echo OK raw id
 ```
 
 **Manual / browser test (paste into DevTools console after loading
@@ -303,7 +303,7 @@ $('#btn-copy').click();
 
 ```bash
 # Add an HTML smoke check via headless chromium if installed:
-chromium --headless --disable-gpu --dump-dom http://localhost:${PORT:-8088}/tool.php 2>/dev/null \
+chromium --headless --disable-gpu --dump-dom http://localhost:${HTTP_PORT:-80}/tool.php 2>/dev/null \
   | grep -q 'id="ps1-preview"' && echo OK DOM rendered
 ```
 

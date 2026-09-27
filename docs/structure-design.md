@@ -4,20 +4,15 @@
 
 ```
 ps1-generator/
-├── docker-compose.yml          # Compose definition (single `web` service)
-├── Dockerfile                  # OpenLiteSpeed + PHP image, custom entrypoint
-├── .env.example                # Sample environment file
+├── docker-compose.yml          # Compose definition (single `web` service, stock OLS image)
+├── .env.example                # Sample environment file (HTTP_PORT, HTTPS_PORT, OLS_ADMIN_*)
 ├── README.md                   # Quick start + how to apply a generated PS1
 ├── docs/
 │   ├── about.md                # Project brief (this design originates here)
 │   ├── application-design.md   # What the app does + why
 │   ├── structure-design.md     # This file — code layout + data flow
 │   └── ux-ui-design.md         # Visual language + interaction design
-├── config/
-│   └── openlitespeed/
-│       ├── httpd_config.conf   # OLS virtual host + PHP handler
-│       └── vhconf.conf         # Per-vhost routing for the PS1 site
-├── public/                     # Webroot — bind-mounted to /var/www/html
+├── public/                     # Webroot — bind-mounted to /var/www/vhosts/localhost/html
 │   ├── index.php               # Redirects to /tool.php
 │   ├── tool.php                # The interactive PS1 builder
 │   ├── learn.php               # The PS1 knowledge / reference document
@@ -50,8 +45,8 @@ ps1-generator/
 - **`public/` as the only webroot.** Anything outside `public/` is not
   served by OpenLiteSpeed. The README and `docs/` are *not* exposed.
 - **`includes/` and `assets/` live inside `public/`.** Because OLS serves
-  from `/var/www/html`, and we want `require_once` paths to mirror URL
-  paths for mental clarity.
+  from `/var/www/vhosts/localhost/html`, and we want `require_once` paths
+  to mirror URL paths for mental clarity.
 - **`data/tokens.json` is the single source of truth for the vocabulary.**
   `includes/tokens.php` reads the JSON at boot and exposes a PHP array
   for the Knowledge page server-render. `assets/js/palette.js` ships a
@@ -69,52 +64,49 @@ ps1-generator/
 ```yaml
 services:
   web:
-    build: .
-    image: ps1-generator:latest
+    image: litespeedtech/openlitespeed:latest
     container_name: ps1-web
+    restart: unless-stopped
     ports:
-      - "8088:80"          # host:container — adjust if 80 is taken
+      - ${HTTP_PORT:-80}:80
+      - ${HTTPS_PORT:-443}:443
+      - 7080:7080           # OLS WebAdmin (htpasswd-protected, see README)
     volumes:
-      - ./public:/var/www/html
-      - ./config/openlitespeed:/usr/local/lsws/conf/vhosts/ps1
+      - ./public:/var/www/vhosts/localhost/html
       - ./logs:/var/log/lsws
     environment:
-      TZ: UTC
-    restart: unless-stopped
+      - TZ=Asia/Bangkok
+      - ADMIN_USER=${OLS_ADMIN_USER:-admin}
+      - ADMIN_PASSWORD=${OLS_ADMIN_PASSWORD:-P@ssw0rd}
+    command: >
+      sh -c 'HASH=$$(openssl passwd -1 "$${ADMIN_PASSWORD}"); printf "$${ADMIN_USER}:$${HASH}\n" > /usr/local/lsws/admin/conf/htpasswd && chown lsadm:lsadm /usr/local/lsws/admin/conf/htpasswd && chmod 600 /usr/local/lsws/admin/conf/htpasswd && /entrypoint.sh'
 ```
 
-### 3.2 Dockerfile (sketch)
+We use the **stock** `litespeedtech/openlitespeed:latest` image with
+no custom `Dockerfile`. The `command:` writes an htpasswd line for OLS
+WebAdmin (reachable on `http://localhost:7080`) then execs the stock
+`/entrypoint.sh`. We do **not** ship our own `httpd_config.conf` or
+`vhconf.conf` — the stock `vhTemplate docker` spawns a `localhost`
+vhost whose `vhRoot /var/www/vhosts/$VH_NAME/` matches our bind-mount.
 
-```
-FROM litespeedtech/openlitespeed:latest
-
-# Copy our OLS vhost config in
-COPY config/openlitespeed/httpd_config.conf  /usr/local/lsws/conf/httpd_config.conf
-COPY config/openlitespeed/vhconf.conf        /usr/local/lsws/conf/vhosts/ps1/vhconf.conf
-
-# PHP is already provided by the base image via LSPHP
-# Ensure mod_rewrite is enabled (default)
-
-EXPOSE 80
-# Entrypoint comes from the base image; no override needed.
-```
-
-### 3.3 Runtime topology
+### 3.2 Runtime topology
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    Host machine                         │
 │                                                         │
-│   :8088  ────►  docker host  ────►  container :80      │
+│   :80   (HTTP_PORT)   ──►  container :80                │
+│   :443  (HTTPS_PORT)  ──►  container :443               │
+│   :7080               ──►  container :7080 (WebAdmin)   │
 │                                                         │
 │   bind mounts:                                          │
-│     ./public   → /var/www/html                         │
-│     ./config   → /usr/local/lsws/conf/vhosts/ps1       │
+│     ./public   → /var/www/vhosts/localhost/html         │
 │     ./logs     → /var/log/lsws                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 Single service, no sidecars, no networks beyond the default bridge.
+Override host ports in `.env` if 80/443/7080 are taken on the host.
 
 ---
 
@@ -293,7 +285,7 @@ No server round-trip. The scanner is a pure function in `tool.js`.
 | `/data/...`        | static (JSON)      | Same as assets — no PHP execution      |
 | anything else      | 404                | OLS default error page                 |
 
-The default `vhconf.conf` maps `/` to `/var/www/html` with `index.php` as
+The default vhconf for the stock `vhTemplate docker` template maps `/` to
 a fall-through index. PHP execution is enabled only for `*.php`.
 
 ---
@@ -325,9 +317,9 @@ edit a .php / .css file
    │
    └──► saved on host → immediately visible on next request (no restart)
 
-edit config/openlitespeed/*
+edit docker-compose.yml / .env
    │
-   └──► docker compose restart web   # OLS picks up new vhost config
+   └──► docker compose up -d    # OLS restarts and re-binds ports / volumes
 ```
 
 The development loop is "save and refresh", with the only restart being

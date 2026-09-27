@@ -132,8 +132,8 @@ optimised for the Learner. The Tweaker is served by both.
                                │
                 ┌──────────────▼──────────────┐
                 │   Filesystem                │
-                │   /var/www/html/*.php       │
-                │   /var/www/html/assets/*    │
+                │   /var/www/vhosts/localhost/html/*.php   │
+                │   /var/www/vhosts/localhost/html/assets/*│
                 └─────────────────────────────┘
 ```
 
@@ -205,7 +205,7 @@ Color escapes (`\[\e[F;BGm\]`) are emitted around the chosen tokens.
 
 The project is considered done when, after `docker compose up`:
 
-1. `http://localhost:8088/` redirects to the Tool.
+1. `http://localhost/` (or `http://localhost:${HTTP_PORT}/`) redirects to the Tool.
 2. The Tool renders without console errors and shows a token palette + preview.
 3. Clicking a token updates the preview in < 16 ms.
 4. Pasting an existing PS1 into "Import" updates the preview correctly.

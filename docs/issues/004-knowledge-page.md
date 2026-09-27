@@ -200,7 +200,7 @@ source ~/.bashrc</code></pre>
 ```bash
 docker compose up -d --build
 # Page loads, is JS-free, contains every section
-curl -sS http://localhost:${PORT:-8088}/learn.php -o /tmp/learn.html
+curl -sS http://localhost:${HTTP_PORT:-80}/learn.php -o /tmp/learn.html
 grep -q 'id="what-is-ps1"'      /tmp/learn.html && echo OK what-is-ps1
 grep -q 'id="escape-codes"'     /tmp/learn.html && echo OK escape-codes
 grep -q 'id="color-escapes"'    /tmp/learn.html && echo OK color-escapes

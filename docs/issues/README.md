@@ -16,7 +16,7 @@ check.
 
 | # | Issue                                                | Depends on       | Status |
 |---|------------------------------------------------------|------------------|--------|
-| 001 | [Infra skeleton — Docker + OLS + empty webroot](001-infra-skeleton.md)         | —                | � runtime check pending — files done, image pull needed |
+| 001 | [Infra skeleton — Docker + OLS + empty webroot](001-infra-skeleton.md)         | —                | ✅ done — `curl http://localhost/index.php` returns 200 with the expected body |
 | 002 | [Shared chrome — header / footer / base CSS](002-shared-chrome.md)              | 001              | 🟡 planned |
 | 003 | [Tokens data file + PHP reader](003-tokens-data.md)                            | 001              | 🟡 planned |
 | 004 | [Knowledge page (`learn.php`)](004-knowledge-page.md)                          | 002, 003         | 🟡 planned |
@@ -42,7 +42,8 @@ without an explicit decision:
 - **Stack:** Docker Compose + OpenLiteSpeed + PHP. No database, no
   external services.
 - **Webroot:** `public/` is the **only** directory bind-mounted into
-  `/var/www/html`.
+  `/var/www/vhosts/localhost/html` (where the stock OLS `vhTemplate
+  docker` expects the `localhost` vhost's docRoot).
 - **Token vocabulary:** `data/tokens.json` is the **single source of
   truth**. Both `assets/js/palette.js` (client) and
   `includes/tokens.php` (server) read from it.
