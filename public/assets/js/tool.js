@@ -324,7 +324,14 @@
 
   /** \W — basename of cwd. Matches Bash semantics. */
   function fmtCwdBase(cwd) {
-    const m = cwd.match(/[^/]+$/);
+    if (!cwd) return cwd;
+    // Trim trailing slashes so we don't accidentally return an empty
+    // match on inputs like "/var/www/". The lookahead anchors to the
+    // (optional) trailing slash so a path like "/a/b/" yields "b", not
+    // "" or the whole string.
+    const trimmed = cwd.replace(/\/+$/, '');
+    if (!trimmed) return '';
+    const m = trimmed.match(/[^/]+$/);
     return m ? m[0] : cwd;
   }
 

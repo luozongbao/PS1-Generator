@@ -21,7 +21,7 @@ window.PS1_PALETTE = {
     { code: "\\\\", label: "Literal backslash",          group: "Layout",   description: "Outputs a single backslash character.",                                example: "\\" },
     { code: "\\[", label: "Non-printing open",           group: "Layout",   description: "Begins a sequence of non-printing characters (e.g. color escapes). Wrap every ANSI escape in \\[ ... \\] so Bash counts the prompt correctly.", example: "\\[\\e[32m\\]" },
     { code: "\\]", label: "Non-printing close",          group: "Layout",   description: "Ends a sequence of non-printing characters begun by \\].",            example: "\\]" },
-    { code: "$(b=$(git symbolic-ref --short HEAD 2>/dev/null); [[ -n \"$b\" ]] && printf \" (%s)\" \"$b\")", label: "Git branch",         group: "Subshells", description: "Inserts the current Git branch in parentheses when inside a Git working tree; empty elsewhere. Runs in your shell, so the value is a placeholder in the preview.", example: "(main)" }
+    { code: "$(b=$(git symbolic-ref --short HEAD 2>/dev/null); [[ -n \"$b\" ]] && printf \"(%s)\" \"$b\")", label: "Git branch",         group: "Subshells", description: "Inserts the current Git branch in parentheses when inside a Git working tree; empty elsewhere. Runs in your shell, so the value is a placeholder in the preview.", example: "(main)" }
   ],
   colors: {
     fg: [
