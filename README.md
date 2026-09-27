@@ -29,14 +29,18 @@ host-side mapping changes.
 Both [`public/data/tokens.json`](public/data/tokens.json) **and**
 [`public/assets/js/palette.js`](public/assets/js/palette.js) must be
 updated together — the JS file is a hand-maintained mirror used by the
-Tool without a fetch. After editing either, run:
+Tool without a fetch. After editing either, run the drift check:
 
 ```bash
-./scripts/check-palette-drift.sh   # exits 1 on drift
+./scripts/check-palette-drift.sh   # bash (Linux / macOS / Git-Bash)
+pwsh ./scripts/check-palette-drift.ps1   # PowerShell 7+ (Windows / cross-platform)
 ```
 
-The drift check verifies token codes, FG count, and BG count all match.
+Both scripts exit 1 on drift and verify token codes, FG count, and BG count.
 Add a new colour or token in both files in the same commit.
+
+The PowerShell version requires `jq` on `PATH` by default; set
+`$env:PS1GEN_NO_JQ = 1` to use the slower native `ConvertFrom-Json` fallback.
 
 ## Keyboard shortcuts (Tool page)
 
