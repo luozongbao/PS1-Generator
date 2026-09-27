@@ -1,14 +1,19 @@
 services:
   web:
-    build: .
-    image: ps1-generator:latest
+    image: litespeedtech/openlitespeed:latest
     container_name: ps1-web
+    restart: unless-stopped
     ports:
-      - "${PORT:-8088}:80"
+      - ${HTTP_PORT:-80}:80
+      - ${HTTPS_PORT:-443}:443
+      - 7080:7080
     volumes:
-      - ./public:/var/www/html
-      - ./config/openlitespeed:/usr/local/lsws/conf/vhosts/ps1
+      - ./public:/var/www/vhosts/localhost/html
       - ./logs:/var/log/lsws
     environment:
-      TZ: UTC
-    restart: unless-stopped
+      - TZ=Asia/Bangkok
+      - ADMIN_USER=${OLS_ADMIN_USER:-admin}
+      - ADMIN_PASSWORD=${OLS_ADMIN_PASSWORD:-P@ssw0rd}
+    command: >
+      sh -c 'HASH=$$(openssl passwd -1 "$${ADMIN_PASSWORD}"); printf "$${ADMIN_USER}:$${HASH}\n" > /usr/local/lsws/admin/conf/htpasswd && chown lsadm:lsadm /usr/local/lsws/admin/conf/htpasswd && chmod 600 /usr/local/lsws/admin/conf/htpasswd && /entrypoint.sh'
+
