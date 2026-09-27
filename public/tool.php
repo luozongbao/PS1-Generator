@@ -106,6 +106,33 @@ $defaultPS1 = '\u@\h:\w\$ ';
         <button type="button" class="btn" id="btn-import">Import&hellip;</button>
         <span class="muted small" id="status-line"></span>
       </div>
+
+      <section class="howto" aria-label="How to use">
+        <h3 class="howto-title">How to use</h3>
+        <ol class="howto-list">
+          <li><strong>Build</strong> &mdash; click a token on the left to
+            insert it at the cursor in the Raw output box. You can also
+            type or edit the code directly.</li>
+          <li><strong>Style</strong> &mdash; pick a foreground / background
+            colour or bold from the swatches above the preview. The
+            colour wraps the next token you insert.</li>
+          <li><strong>Preview</strong> &mdash; the LIVE PREVIEW shows
+            approximately what your terminal will render. Token
+            descriptions explain what each one means.</li>
+          <li><strong>Copy</strong> &mdash; click <em>Copy</em> (or hit
+            <kbd>Ctrl</kbd>/<kbd>&#8984;</kbd>+<kbd>C</kbd> while the Raw
+            output is focused). The clipboard receives the wrapped
+            <code>PS1='&hellip;'</code> form, ready to paste into a
+            shell.</li>
+          <li><strong>Apply</strong> &mdash; paste the copied line into
+            your terminal to test it. To make it permanent, drop the
+            same line into your <code>~/.bashrc</code> (or
+            <code>~/.zshrc</code>) and start a new shell.</li>
+          <li><strong>Import</strong> &mdash; already have a PS1? Click
+            <em>Import&hellip;</em>, paste the value, and the recognised
+            tokens light up on the left.</li>
+        </ol>
+      </section>
     </section>
   </div>
 </section>
