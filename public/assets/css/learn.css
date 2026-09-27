@@ -1,0 +1,94 @@
+/* learn.css — Knowledge-page styles. Issue 004. */
+
+.learn {
+  max-width: 760px;
+  margin-inline: auto;
+  line-height: 1.6;
+}
+
+.learn h1 {
+  font-size: 2rem;
+  margin-bottom: var(--space-4);
+}
+
+.learn h2 {
+  margin-top: var(--space-6);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--space-1);
+}
+
+.learn h3 {
+  margin-top: var(--space-4);
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+
+.learn p,
+.learn ol,
+.learn ul {
+  margin-bottom: var(--space-3);
+}
+
+.learn ol,
+.learn ul {
+  padding-left: var(--space-5);
+}
+
+.learn code,
+.learn kbd,
+.learn pre {
+  font-family: var(--font-mono);
+}
+
+.learn kbd {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-chip);
+  padding: 0 4px;
+  font-size: 0.9em;
+}
+
+.ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-2) 0 var(--space-4);
+}
+
+.ref-table th,
+.ref-table td {
+  text-align: left;
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.ref-table thead th {
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+}
+
+.swatch {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-chip);
+  vertical-align: middle;
+}
+
+.cta {
+  margin-top: var(--space-6);
+  padding: var(--space-3);
+  background: var(--bg-surface);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-panel);
+}
+
+.cta p {
+  margin: 0;
+}
