@@ -230,11 +230,49 @@
   overflow: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
+.modal-panel h2 {
+  margin-top: 0;
+  margin-bottom: var(--space-2);
+  font-size: 1.1rem;
+}
+.modal-panel textarea {
+  width: 100%;
+  background: var(--code-bg);
+  color: var(--fg-text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-btn);
+  padding: var(--space-2);
+  font-family: var(--font-mono);
+  resize: vertical;
+}
 .modal-actions {
   display: flex;
   gap: var(--space-2);
   justify-content: flex-end;
   margin-top: var(--space-3);
+}
+
+/* ---- swatch active state (007) ---- */
+
+.swatch.is-active {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ---- chip pulse highlight on reverse-mapper match (007) ---- */
+
+.chip.is-highlight {
+  animation: pulse-highlight 1.5s ease-out;
+}
+@keyframes pulse-highlight {
+  0%   { background: var(--accent); color: #0a0c10; border-color: var(--accent); }
+  100% { background: transparent; color: var(--fg-text); border-color: var(--border); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chip.is-highlight {
+    animation: none;
+    background: var(--bg-surface-2);
+  }
 }
 
 /* ---- responsive ---- */
