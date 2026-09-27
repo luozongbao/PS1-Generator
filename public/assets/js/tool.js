@@ -442,6 +442,50 @@
     bindSwatches();
     refreshSwatchUI();
     modal.init();
+
+    // 008 — keyboard shortcuts (matches ux-ui-design.md §5.5).
+    document.addEventListener('keydown', (e) => {
+      const meta = e.ctrlKey || e.metaKey;
+      const tag = (e.target && e.target.tagName || '').toLowerCase();
+      const inField = tag === 'input' || tag === 'textarea';
+      const inRaw   = e.target && e.target.id === 'ps1-raw';
+
+      // Ctrl/Cmd+Z — undo (allow even when typing)
+      if (meta && !e.shiftKey && e.key.toLowerCase() === 'z') {
+        e.preventDefault(); undo(); return;
+      }
+      // Ctrl/Cmd+K — clear (allow even when typing)
+      if (meta && e.key.toLowerCase() === 'k') {
+        e.preventDefault(); clearAll(); return;
+      }
+      // Ctrl/Cmd+C — copy only when raw textarea is focused;
+      // otherwise let the browser do its default copy of selected text.
+      if (meta && e.key.toLowerCase() === 'c' && inRaw) {
+        e.preventDefault(); copyRaw(); return;
+      }
+      // ? — open help (skip when typing in a field so we don't capture `?`
+      // the user wants to insert literally)
+      if (!meta && !e.shiftKey && e.key === '?' && !inField) {
+        e.preventDefault();
+        openHelp(); return;
+      }
+    });
+
+    // Help dialog uses the native <dialog>; Esc is handled by the element
+    // itself, but we also wire a backdrop click to close.
+    const helpEl = $('#help-dialog');
+    if (helpEl) {
+      helpEl.addEventListener('click', (e) => {
+        if (e.target instanceof Element && e.target === helpEl) helpEl.close();
+      });
+    }
+  }
+
+  function openHelp() {
+    const d = $('#help-dialog');
+    if (!d) return;
+    if (typeof d.showModal === 'function') d.showModal();
+    else d.setAttribute('open', '');
   }
 
   if (document.readyState === 'loading') {

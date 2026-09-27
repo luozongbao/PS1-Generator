@@ -275,6 +275,63 @@
   }
 }
 
+/* ---- help dialog (008) ---- */
+
+dialog.help {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--bg-surface);
+  color: var(--fg-text);
+  padding: var(--space-4);
+  min-width: 320px;
+  max-width: 90vw;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+dialog.help::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+dialog.help h2 {
+  margin-top: 0;
+  margin-bottom: var(--space-2);
+  font-size: 1.1rem;
+}
+.help-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--space-3);
+}
+.help-table th,
+.help-table td {
+  text-align: left;
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--border);
+  font-weight: 400;
+  font-size: 0.95rem;
+}
+.help-table th {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  white-space: nowrap;
+}
+.help-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0;
+}
+
+/* ---- global reduced-motion override (008) ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ---- responsive ---- */
 
 @media (max-width: 960px) {

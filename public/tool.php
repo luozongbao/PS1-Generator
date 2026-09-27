@@ -100,6 +100,24 @@ $defaultPS1 = '\u@\h:\w\$ ';
 </section>
 
 <!-- Modal placeholder (filled in by 007) -->
+<dialog id="help-dialog" class="help" aria-labelledby="help-title">
+  <h2 id="help-title">Keyboard shortcuts</h2>
+  <table class="help-table">
+    <tbody>
+      <tr><th>Tab / Shift+Tab</th><td>Move through chips and controls</td></tr>
+      <tr><th>Enter on a chip</th><td>Insert the token at the cursor</td></tr>
+      <tr><th>Ctrl/⌘ + Z</th><td>Undo</td></tr>
+      <tr><th>Ctrl/⌘ + K</th><td>Clear</td></tr>
+      <tr><th>Ctrl/⌘ + C</th><td>Copy raw (when the Raw output is focused)</td></tr>
+      <tr><th>?</th><td>Open this help</td></tr>
+      <tr><th>Esc</th><td>Close</td></tr>
+    </tbody>
+  </table>
+  <form method="dialog" class="help-actions">
+    <button type="submit" class="btn">Close</button>
+  </form>
+</dialog>
+
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true"
      aria-labelledby="modal-title">
   <div class="modal-backdrop" data-close></div>
