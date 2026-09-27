@@ -34,8 +34,9 @@ $defaultPS1 = '\u@\h:\w\$ ';
           </button>
           <?php if ($g === 'Subshells'): ?>
             <p class="muted small subshells-hint">
-              Subshells run in your terminal &mdash; the preview shows a
-              styled placeholder, not a real value.
+              Subshells run in your terminal &mdash; the preview shows the
+              mockup value (e.g. <code>(main)</code> for git branch), not
+              a real evaluation.
             </p>
           <?php endif; ?>
           <ul class="palette-list">

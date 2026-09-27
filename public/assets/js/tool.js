@@ -111,40 +111,81 @@
    *   'newline'   — \n
    *   'subshell'  — $(...) or `...` (009: rendered as a styled placeholder)
    */
-  // Groups: 1=ansiClose 2=ansiOpen(params) 3=ansiOpen(inner nums)
-  //         4=\n 5=\[\] 6=\[|\] 7=\\ 8=\X
-  //         9=$(...)$ 10=`...`  (009: subshell forms)
-  // Order matters: ansiClose (literal "\e[0m\]") must be tested BEFORE
-  // ansiOpen — otherwise the opening branch's `\d+(?:;\d+)*` swallows the
-  // single `0` and emits ansiOpen("0") instead of ansiClose.
-  // Char class for `\X` covers all PS1 escape initials in the token set:
+  // Backslash-token regex (groups 1..8): ansiClose/ansiOpen/newline/\[\]/[\]|]//
+  // /\\ / \X. Char class `\X` covers the PS1 escape initials we render:
   // letters + @ ! $ (others — [, ], \\ — handled by earlier branches).
-  // Subshells must come BEFORE the catch-all text fall-through, but
-  // AFTER all the backslash-escape branches so we don't accidentally
-  // match a backslash-prefixed command like `\$\(date\)`.
-  const TOKEN_RE = /(\\\[\\e\[0m\\\])|(\\\[\\e\[(\d+(?:;\d+)*)m\\\])|(\\n)|(\\\[\\\])|(\\[\[\]])|(\\\\)|(\\[A-Za-z@!$])|(\$\([^()]*\))|(`[^`]*`)/g;
+  // Subshells (`$(...)` and `` `...` ``) are NOT matched here — they require
+  // depth-counting because a subshell can itself contain `$(...)`. The
+  // tokenise() function below walks the raw string char-by-char: when it
+  // sees a backslash that matches ESCAPE_RE, it emits the appropriate
+  // backslash-token; when it sees `$(` or `` ` `` it scans to the matching
+  // close with paren depth tracking and emits a `subshell` token.
+  const ESCAPE_RE = /(\\\[\\e\[0m\\\])|(\\\[\\e\[(\d+(?:;\d+)*)m\\\])|(\\n)|(\\\[\\\])|(\\[\[\]])|(\\\\)|(\\[A-Za-z@!$])/g;
 
   function tokenise(raw) {
     const out = [];
-    let lastIndex = 0;
-    let m;
-    TOKEN_RE.lastIndex = 0;
-    while ((m = TOKEN_RE.exec(raw)) !== null) {
-      const before = raw.slice(lastIndex, m.index);
-      if (before) out.push({ kind: 'text', value: before });
-      if (m[1] != null)      out.push({ kind: 'ansiClose', value: '0' });
-      else if (m[2] != null) out.push({ kind: 'ansiOpen',  value: m[3] });
-      else if (m[4] != null) out.push({ kind: 'newline',   value: '\\n' });
-      else if (m[5] != null) out.push({ kind: 'text',      value: '\\[\\]' });
-      else if (m[6] != null) out.push({ kind: 'text',      value: m[6] });
-      else if (m[7] != null) out.push({ kind: 'text',      value: '\\\\' });
-      else if (m[8] != null) out.push({ kind: 'escape',    value: m[8] });
-      else if (m[9] != null) out.push({ kind: 'subshell',  value: m[9] });
-      else if (m[10] != null) out.push({ kind: 'subshell', value: m[10] });
-      lastIndex = TOKEN_RE.lastIndex;
+    let i = 0;
+    const n = raw.length;
+    ESCAPE_RE.lastIndex = 0;
+    let textBuf = '';
+    const flushText = () => {
+      if (textBuf) { out.push({ kind: 'text', value: textBuf }); textBuf = ''; }
+    };
+    while (i < n) {
+      const c = raw[i];
+      // Backslash escape — only when followed by a recognised escape char.
+      if (c === '\\' && i + 1 < n) {
+        ESCAPE_RE.lastIndex = i;
+        const m = ESCAPE_RE.exec(raw);
+        if (m && m.index === i) {
+          // m.end() points just past the matched escape
+          flushText();
+          if (m[1] != null)      out.push({ kind: 'ansiClose', value: '0' });
+          else if (m[2] != null) out.push({ kind: 'ansiOpen',  value: m[3] });
+          else if (m[4] != null) out.push({ kind: 'newline',   value: '\\n' });
+          else if (m[5] != null) out.push({ kind: 'text',      value: '\\[\\]' });
+          else if (m[6] != null) out.push({ kind: 'text',      value: m[6] });
+          else if (m[7] != null) out.push({ kind: 'text',      value: '\\\\' });
+          else if (m[8] != null) out.push({ kind: 'escape',    value: m[8] });
+          i = m.index + m[0].length;
+          continue;
+        }
+        // Not an escape — fall through; the leading backslash is text.
+      }
+      // $() subshell — depth-counted to support nested $(...) inside.
+      if (c === '$' && i + 1 < n && raw[i + 1] === '(') {
+        let depth = 1;
+        let j = i + 2;
+        while (j < n && depth > 0) {
+          if (raw[j] === '(') depth++;
+          else if (raw[j] === ')') depth--;
+          if (depth === 0) break;
+          j++;
+        }
+        if (depth === 0) {
+          flushText();
+          out.push({ kind: 'subshell', value: raw.slice(i, j + 1) });
+          i = j + 1;
+          continue;
+        }
+        // Unmatched — treat as text.
+      }
+      // Backtick subshell — match until next backtick (no nesting in PS1).
+      if (c === '`') {
+        let j = i + 1;
+        while (j < n && raw[j] !== '`') j++;
+        if (j < n) {
+          flushText();
+          out.push({ kind: 'subshell', value: raw.slice(i, j + 1) });
+          i = j + 1;
+          continue;
+        }
+        // Unmatched — treat as text.
+      }
+      textBuf += c;
+      i++;
     }
-    const tail = raw.slice(lastIndex);
-    if (tail) out.push({ kind: 'text', value: tail });
+    flushText();
     return out;
   }
 
@@ -204,6 +245,23 @@
     history: 0,
     jobs: 0,
   }, (typeof window !== 'undefined' && window.PS1_RUNTIME) || {});
+
+  // Mockup values keyed by token code. Built from window.PS1_PALETTE.tokens
+  // at boot so the live preview shows the same value the chip advertises.
+  // Falls back to {} if palette.js hasn't loaded (e.g. in a test harness) —
+  // subshells then render as raw `$(...)` text, same as before this existed.
+  const EXAMPLES = (() => {
+    const map = Object.create(null);
+    const tokens = (typeof window !== 'undefined'
+                    && window.PS1_PALETTE
+                    && window.PS1_PALETTE.tokens) || [];
+    for (const t of tokens) {
+      if (t && typeof t.code === 'string' && typeof t.example === 'string') {
+        map[t.code] = t.example;
+      }
+    }
+    return map;
+  })();
 
   /**
    * Format a Date as `Wed Sep 27`. Bash's `\d` is locale-dependent
@@ -325,12 +383,24 @@
         continue;
       }
       if (t.kind === 'subshell') {
-        // Browser cannot execute $(...) safely; show a styled placeholder.
+        // Browser cannot execute $(...) safely. If the token has a mockup
+        // `example` in palette.js, render that in the same .p-runtime style
+        // used for resolved escapes so the demo looks uniform. Otherwise fall
+        // back to the styled `$(...)` placeholder so the user still sees
+        // what's in their raw PS1.
+        const mockup = EXAMPLES[t.value];
         const span = document.createElement('span');
-        span.className = 'p-code';
-        span.textContent = t.value;
-        span.setAttribute('title',
-          'Subshell substitution runs in your shell, not in the browser.');
+        if (mockup != null) {
+          span.className = 'p-runtime';
+          span.textContent = mockup;
+          span.setAttribute('title',
+            'Mockup value — your shell will evaluate the real subshell here.');
+        } else {
+          span.className = 'p-code';
+          span.textContent = t.value;
+          span.setAttribute('title',
+            'Subshell substitution runs in your shell, not in the browser.');
+        }
         applyAnsi(span, open);
         pre.appendChild(span);
         continue;
