@@ -157,6 +157,47 @@
   font-family: var(--font-mono);
 }
 
+/* 009 — Live-preview span classes. ANSI colour/background still
+   wins over these because applyAnsi() writes inline style.last attribute
+   on the same element, so the inline rule takes precedence over any
+   `color:` from this block. The visual treatment therefore only
+   affects what isn't overridden by ANSI. */
+.p-runtime {
+  /* Subtle dashed underline hints "this value resolves at runtime".
+     Kept low-contrast so resolved timestamps don't shout louder than
+     the surrounding prompt text. */
+  text-decoration: underline dashed var(--border);
+  text-underline-offset: 3px;
+}
+
+.p-code {
+  /* Subshell substitution ($(...) and backticks) can't be safely
+     executed in a browser, so we render it as a styled chip rather
+     than letting it vanish into plain text. */
+  background: var(--bg-page);
+  border: 1px dashed var(--accent);
+  border-radius: 4px;
+  padding: 0 4px;
+  font-style: italic;
+  color: var(--fg-muted);
+}
+
+.p-escape {
+  /* Unknown / unsupported escape — render literally with a soft amber
+     so the user sees their typo. */
+  color: #c97a14;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .p-runtime,
+  .p-code,
+  .p-escape {
+    /* No animation on these classes by default, but if we ever add
+       a pulse on resolved values, gate it here. */
+    animation: none !important;
+  }
+}
+
 .ps1-raw {
   width: 100%;
   background: var(--code-bg);

@@ -132,6 +132,7 @@ $defaultPS1 = '\u@\h:\w\$ ';
 </div>
 
 <script src="/assets/js/palette.js"></script>
+<?php ps1_inject_runtime_script(); ?>
 <script src="/assets/js/tool.js"></script>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>

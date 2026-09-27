@@ -5,6 +5,9 @@
 //
 // SECURITY: renderPreview() MUST use textContent, never innerHTML,
 // to avoid XSS via a malicious PS1 string pasted into the textarea.
+// Issue 009: live preview — resolve known tokens to runtime values
+// using window.PS1_RUNTIME injected by tool.php. Subshells $(...) and
+// `...` are rendered as styled placeholders, never executed.
 (function () {
   'use strict';
 
@@ -23,6 +26,9 @@
     fg: null,    // number | null   (ANSI 30..37)
     bg: null,    // number | null   (ANSI 40..47)
     bold: false, // boolean
+    // Issue 009 — live preview refresh state.
+    liveRefresh: true,
+    liveTimer: null,
   };
 
   // ---------- persistence ----------
@@ -103,15 +109,20 @@
    *   'ansiOpen'  — \[\e[<n>m\]  (numeric params inside)
    *   'ansiClose' — \[\e[0m\]
    *   'newline'   — \n
+   *   'subshell'  — $(...) or `...` (009: rendered as a styled placeholder)
    */
   // Groups: 1=ansiClose 2=ansiOpen(params) 3=ansiOpen(inner nums)
   //         4=\n 5=\[\] 6=\[|\] 7=\\ 8=\X
+  //         9=$(...)$ 10=`...`  (009: subshell forms)
   // Order matters: ansiClose (literal "\e[0m\]") must be tested BEFORE
   // ansiOpen — otherwise the opening branch's `\d+(?:;\d+)*` swallows the
   // single `0` and emits ansiOpen("0") instead of ansiClose.
   // Char class for `\X` covers all PS1 escape initials in the token set:
   // letters + @ ! $ (others — [, ], \\ — handled by earlier branches).
-  const TOKEN_RE = /(\\\[\\e\[0m\\\])|(\\\[\\e\[(\d+(?:;\d+)*)m\\\])|(\\n)|(\\\[\\\])|(\\[\[\]])|(\\\\)|(\\[A-Za-z@!$])/g;
+  // Subshells must come BEFORE the catch-all text fall-through, but
+  // AFTER all the backslash-escape branches so we don't accidentally
+  // match a backslash-prefixed command like `\$\(date\)`.
+  const TOKEN_RE = /(\\\[\\e\[0m\\\])|(\\\[\\e\[(\d+(?:;\d+)*)m\\\])|(\\n)|(\\\[\\\])|(\\[\[\]])|(\\\\)|(\\[A-Za-z@!$])|(\$\([^()]*\))|(`[^`]*`)/g;
 
   function tokenise(raw) {
     const out = [];
@@ -128,6 +139,8 @@
       else if (m[6] != null) out.push({ kind: 'text',      value: m[6] });
       else if (m[7] != null) out.push({ kind: 'text',      value: '\\\\' });
       else if (m[8] != null) out.push({ kind: 'escape',    value: m[8] });
+      else if (m[9] != null) out.push({ kind: 'subshell',  value: m[9] });
+      else if (m[10] != null) out.push({ kind: 'subshell', value: m[10] });
       lastIndex = TOKEN_RE.lastIndex;
     }
     const tail = raw.slice(lastIndex);
@@ -174,6 +187,116 @@
     }
   }
 
+  // ---------- live-preview resolution (009) ----------
+
+  /**
+   * Runtime env injected by PHP on tool.php. Defaults are conservative:
+   * if tool.php forgot to inject (e.g. we are loaded in a scratch
+   * harness), we still render something rather than crashing.
+   */
+  const RUNTIME = Object.assign({
+    user: 'user',
+    host: 'host',
+    hostFqdn: 'host.local',
+    cwd: '/',
+    home: '/',
+    uid: 1000,
+    history: 0,
+    jobs: 0,
+  }, (typeof window !== 'undefined' && window.PS1_RUNTIME) || {});
+
+  /**
+   * Format a Date as `Wed Sep 27`. Bash's `\d` is locale-dependent
+   * (LC_TIME) but en-US with default options matches `date +"%a %b %e"`
+   * whitespace-collapsed. We use Intl directly for that.
+   */
+  function fmtDate(d) {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      weekday: 'short', month: 'short', day: 'numeric',
+    }).formatToParts(d);
+    const out = { weekday: '', month: '', day: '' };
+    for (const p of parts) {
+      if (p.type in out) out[p.type] = p.value;
+    }
+    // Bash uses %e which pads-with-space (3 -> " 3"). Match that.
+    const day = out.day.replace(/^0/, '');
+    const dayPadded = day.length < 2 ? ' ' + day : day;
+    return `${out.weekday} ${out.month} ${dayPadded}`;
+  }
+  /** 24h HH:MM:SS (matches Bash `\t`, locale-neutral). */
+  function fmtTime24Sec(d) {
+    return [
+      String(d.getHours()).padStart(2, '0'),
+      String(d.getMinutes()).padStart(2, '0'),
+      String(d.getSeconds()).padStart(2, '0'),
+    ].join(':');
+  }
+  /** 12h HH:MM:SS AM/PM (matches Bash `\T`). */
+  function fmtTime12Sec(d) {
+    let h = d.getHours() % 12;
+    if (h === 0) h = 12;
+    const m = String(d.getMinutes()).padStart(2, '0');
+    const s = String(d.getSeconds()).padStart(2, '0');
+    const ap = d.getHours() < 12 ? 'AM' : 'PM';
+    return `${String(h).padStart(2, '0')}:${m}:${s} ${ap}`;
+  }
+  /** 12h HH:MM AM/PM (matches Bash `\@`). */
+  function fmtTime12AmPm(d) {
+    let h = d.getHours() % 12;
+    if (h === 0) h = 12;
+    const m = String(d.getMinutes()).padStart(2, '0');
+    const ap = d.getHours() < 12 ? 'AM' : 'PM';
+    return `${String(h).padStart(2, '0')}:${m} ${ap}`;
+  }
+  /** 24h HH:MM (matches Bash `\A`). */
+  function fmtTime24Min(d) {
+    return [
+      String(d.getHours()).padStart(2, '0'),
+      String(d.getMinutes()).padStart(2, '0'),
+    ].join(':');
+  }
+
+  /** \w — full cwd with $HOME abbreviated to ~. Matches Bash semantics. */
+  function fmtCwdFull(cwd, home) {
+    if (!home) return cwd;
+    if (cwd === home) return '~';
+    if (cwd.startsWith(home + '/')) return '~' + cwd.slice(home.length);
+    return cwd;
+  }
+
+  /** \W — basename of cwd. Matches Bash semantics. */
+  function fmtCwdBase(cwd) {
+    const m = cwd.match(/[^/]+$/);
+    return m ? m[0] : cwd;
+  }
+
+  /**
+   * Resolve a single PS1 token code (e.g. "\\u", "\\A", "\\$") to the
+   * string Bash would print at runtime. Returns null for unknown codes
+   * so the caller can fall back to rendering the literal `\X`.
+   *
+   * `now` is injectable for tests. Production calls with `new Date()`.
+   */
+  function resolveEscape(code, now) {
+    if (!(now instanceof Date)) now = new Date();
+    switch (code) {
+      case '\\u': return RUNTIME.user;
+      case '\\h': return RUNTIME.host;
+      case '\\H': return RUNTIME.hostFqdn;
+      case '\\w': return fmtCwdFull(RUNTIME.cwd, RUNTIME.home);
+      case '\\W': return fmtCwdBase(RUNTIME.cwd);
+      case '\\d': return fmtDate(now);
+      case '\\t': return fmtTime24Sec(now);
+      case '\\T': return fmtTime12Sec(now);
+      case '\\@': return fmtTime12AmPm(now);
+      case '\\A': return fmtTime24Min(now);
+      case '\\$': return RUNTIME.uid === 0 ? '#' : '$';
+      case '\\!': return String(RUNTIME.history);
+      case '\\j': return String(RUNTIME.jobs);
+      default:    return null;
+    }
+  }
+
   /**
    * Render the preview. ALL content goes through textContent / style — no
    * innerHTML on user data. ANSI escapes are consumed (not rendered) and
@@ -183,6 +306,7 @@
     const pre = $('#ps1-preview');
     pre.replaceChildren();
     let open = null;
+    const now = new Date();
     for (const t of tokenise(raw)) {
       if (t.kind === 'newline') {
         pre.appendChild(document.createElement('br'));
@@ -200,8 +324,32 @@
         open = null;
         continue;
       }
+      if (t.kind === 'subshell') {
+        // Browser cannot execute $(...) safely; show a styled placeholder.
+        const span = document.createElement('span');
+        span.className = 'p-code';
+        span.textContent = t.value;
+        span.setAttribute('title',
+          'Subshell substitution runs in your shell, not in the browser.');
+        applyAnsi(span, open);
+        pre.appendChild(span);
+        continue;
+      }
       const span = document.createElement('span');
-      span.className = t.kind === 'escape' ? 'p-escape' : 'p-text';
+      if (t.kind === 'escape') {
+        const resolved = resolveEscape(t.value, now);
+        if (resolved != null) {
+          span.className = 'p-runtime';
+          span.textContent = resolved;
+          applyAnsi(span, open);
+          pre.appendChild(span);
+          continue;
+        }
+        // Unknown escape — render literally so the user can still see it.
+        span.className = 'p-escape';
+      } else {
+        span.className = 'p-text';
+      }
       span.textContent = t.value;
       applyAnsi(span, open);
       pre.appendChild(span);
@@ -478,6 +626,21 @@
       helpEl.addEventListener('click', (e) => {
         if (e.target instanceof Element && e.target === helpEl) helpEl.close();
       });
+    }
+
+    // 009 — live preview tick. Re-render once a second so time tokens
+    // (\t \T \@ \A \d) advance without the user typing. Cheap: tokenise
+    // is small and the preview tree is rebuilt in microseconds. We do
+    // NOT skip on reduced-motion — time isn't motion, it's information.
+    if (state.liveRefresh) {
+      state.liveTimer = setInterval(() => {
+        // Only re-render if a time/date token is actually in the raw,
+        // to avoid pointless work for prompts like `\u@\h:\w\$ `.
+        if (/\\[dAtT@]/.test(state.raw)) renderPreview(state.raw);
+      }, 1000);
+      window.addEventListener('pagehide', () => {
+        if (state.liveTimer) clearInterval(state.liveTimer);
+      }, { once: true });
     }
   }
 
