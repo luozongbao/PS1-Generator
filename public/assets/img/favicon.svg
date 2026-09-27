@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="PS1 Generator">
+  <title>PS1 Generator</title>
+  <rect width="64" height="64" rx="10" fill="#0f1115"/>
+  <rect x="6" y="10" width="52" height="44" rx="6" fill="#1a1d23" stroke="#2c313a" stroke-width="1"/>
+  <text x="32" y="40" font-family="ui-monospace, Menlo, monospace" font-size="24" font-weight="700" fill="#4cc2ff" text-anchor="middle">$_</text>
+</svg>

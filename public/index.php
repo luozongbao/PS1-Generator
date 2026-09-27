@@ -1,8 +1,11 @@
 <?php
-// Issue 001 — infra skeleton smoke page.
-// This file will be replaced in issue 002 with proper header/footer chrome.
-http_response_code(200);
-header('Content-Type: text/plain; charset=utf-8');
-echo "PS1 Generator — infra skeleton OK\n";
-echo "PHP " . PHP_VERSION . "\n";
-echo "SAPI " . php_sapi_name() . "\n";
+/**
+ * Home page — Issue 002.
+ * The real app lives under /tool.php and /learn.php.
+ */
+$title = 'Home — PS1 Generator';
+require __DIR__ . '/includes/header.php';
+?>
+<h1>Welcome</h1>
+<p>This is the placeholder index, the real site is under <a href="/tool.php">/tool.php</a> and <a href="/learn.php">/learn.php</a>.</p>
+<?php require __DIR__ . '/includes/footer.php'; ?>

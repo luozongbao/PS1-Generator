@@ -1,0 +1,116 @@
+/* base.css — design tokens, reset, light theme override.
+ * Issue 002. Mirrors docs/ux-ui-design.md §2.2. */
+
+:root {
+  /* Surfaces */
+  --bg-page:      #0f1115;
+  --bg-surface:   #1a1d23;
+  --bg-surface-2: #23272f;
+
+  /* Foreground */
+  --fg-text:      #e6e8eb;
+  --fg-muted:     #9aa3ad;
+
+  /* Accent / state */
+  --accent:       #4cc2ff;
+  --accent-hover: #7dd4ff;
+  --danger:       #ff6b6b;
+
+  /* Lines + code */
+  --border:       #2c313a;
+  --code-bg:      #0a0c10;
+
+  /* Spacing scale (8 px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 48px;
+
+  /* Radii */
+  --radius-panel: 6px;
+  --radius-btn:   4px;
+  --radius-chip:  2px;
+
+  /* Typography */
+  --font-ui:   system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+/* ---- reset (minimal, focused) ---- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+html { color-scheme: dark light; }
+
+body {
+  background: var(--bg-page);
+  color: var(--fg-text);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 { margin: 0 0 var(--space-3); font-weight: 600; line-height: 1.25; }
+p, ul, ol { margin: 0 0 var(--space-3); }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+code, pre, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 15px;
+}
+
+pre, code {
+  background: var(--code-bg);
+}
+
+pre {
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  overflow-x: auto;
+}
+
+:not(pre) > code {
+  padding: 0 4px;
+  border-radius: var(--radius-chip);
+}
+
+hr { border: 0; border-top: 1px solid var(--border); margin: var(--space-5) 0; }
+
+img, svg { max-width: 100%; height: auto; display: block; }
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* ---- accessibility: visible focus everywhere ---- */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-chip);
+}
+
+/* ---- light scheme override (kept minimal — readable body text) ---- */
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-page:      #f7f8fa;
+    --bg-surface:   #ffffff;
+    --bg-surface-2: #eef0f4;
+    --fg-text:      #1a1d23;
+    --fg-muted:     #5b6470;
+    --accent:       #0066cc;
+    --accent-hover: #004999;
+    --border:       #d6dae0;
+    --code-bg:      #f0f2f6;
+  }
+}
