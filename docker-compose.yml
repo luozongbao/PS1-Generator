@@ -1,0 +1,14 @@
+services:
+  web:
+    build: .
+    image: ps1-generator:latest
+    container_name: ps1-web
+    ports:
+      - "${PORT:-8088}:80"
+    volumes:
+      - ./public:/var/www/html
+      - ./config/openlitespeed:/usr/local/lsws/conf/vhosts/ps1
+      - ./logs:/var/log/lsws
+    environment:
+      TZ: UTC
+    restart: unless-stopped

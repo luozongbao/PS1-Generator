@@ -1,0 +1,23 @@
+# Local environment — do not commit
+.env
+
+# Logs
+logs/*.log
+!logs/.gitkeep
+
+# Editor / OS noise
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.bak
+
+# Backups of generated data
+public/data/*.bak
+
+# Node / composer (none in v1, but guard for future)
+node_modules/
+vendor/
+
+# Docker overlay cruft
+**/*.pid

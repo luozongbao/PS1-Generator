@@ -16,7 +16,7 @@ check.
 
 | # | Issue                                                | Depends on       | Status |
 |---|------------------------------------------------------|------------------|--------|
-| 001 | [Infra skeleton — Docker + OLS + empty webroot](001-infra-skeleton.md)         | —                | 🟡 planned |
+| 001 | [Infra skeleton — Docker + OLS + empty webroot](001-infra-skeleton.md)         | —                | � runtime check pending — files done, image pull needed |
 | 002 | [Shared chrome — header / footer / base CSS](002-shared-chrome.md)              | 001              | 🟡 planned |
 | 003 | [Tokens data file + PHP reader](003-tokens-data.md)                            | 001              | 🟡 planned |
 | 004 | [Knowledge page (`learn.php`)](004-knowledge-page.md)                          | 002, 003         | 🟡 planned |

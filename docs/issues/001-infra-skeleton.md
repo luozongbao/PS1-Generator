@@ -130,3 +130,19 @@ Expected:
   first to see where it expects vhost configs, then align ours.
 - `localhost` resolving inside the container is not the goal — we only
   verify the host-side `curl`.
+
+## Status
+
+- ✅ **Files created** — all 8 files from §"Files to create" exist
+  on disk and pass offline lint:
+  - `docker-compose.yml` parses as YAML.
+  - `Dockerfile` is 13 lines, valid syntax.
+  - `httpd_config.conf` (143 lines) and `vhconf.conf` (46 lines) have
+    balanced braces (10/10 and 5/5).
+  - `public/index.php` syntax-checked via `docker run --rm php:8.2-fpm-alpine php -l` — no errors.
+  - Vhost name `ps1` in `httpd_config.conf` matches `configFile conf/vhosts/ps1/vhconf.conf` which matches the bind-mount path.
+- 🟠 **Runtime check deferred** — the local Docker daemon cannot reach
+  Docker Hub (`dial tcp ... i/o timeout`), so `docker compose up --build`
+  cannot pull `litespeedtech/openlitespeed:latest` in this environment.
+  When the image is available locally, the full acceptance check
+  from above should be run without any code changes.
