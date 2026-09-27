@@ -97,10 +97,7 @@ $defaultPS1 = '\u@\h:\w\$ ';
       <h2 class="stage-title">Raw output</h2>
       <textarea class="ps1-raw" id="ps1-raw" rows="3"
                 spellcheck="false"
-                aria-label="Raw PS1 string"><?= htmlspecialchars($defaultPS1, ENT_QUOTES, 'UTF-8') ?></textarea>
-      <p class="muted small" id="ps1-export-preview">
-        <span class="export-prefix">Copy emits:&nbsp;</span><code id="ps1-export-preview-code">PS1='<?= htmlspecialchars($defaultPS1, ENT_QUOTES, 'UTF-8') ?>'</code>
-      </p>
+                aria-label="Raw PS1 string (wrapped as PS1='…')">PS1='<?= htmlspecialchars($defaultPS1, ENT_QUOTES, 'UTF-8') ?>'</textarea>
 
       <div class="controls">
         <button type="button" class="btn" id="btn-copy">Copy</button>
@@ -122,7 +119,7 @@ $defaultPS1 = '\u@\h:\w\$ ';
       <tr><th>Enter on a chip</th><td>Insert the token at the cursor</td></tr>
       <tr><th>Ctrl/⌘ + Z</th><td>Undo</td></tr>
       <tr><th>Ctrl/⌘ + K</th><td>Clear</td></tr>
-      <tr><th>Ctrl/⌘ + C</th><td>Copy wrapped as <code>PS1='…'</code> (when the Raw output is focused)</td></tr>
+      <tr><th>Ctrl/⌘ + C</th><td>Copy the wrapped <code>PS1='…'</code> from the Raw output box (browser copy also works — the box is already in export form)</td></tr>
       <tr><th>?</th><td>Open this help</td></tr>
       <tr><th>Esc</th><td>Close</td></tr>
     </tbody>

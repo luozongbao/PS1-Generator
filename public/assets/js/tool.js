@@ -440,21 +440,25 @@
     return `PS1='${safe}'`;
   }
 
-  // Keep the small "Copy emits: PS1='…'" hint in sync with state.raw so
-  // users see the wrapped form before they click Copy.
-  function refreshExportPreview() {
-    const el = document.getElementById('ps1-export-preview-code');
-    if (!el) return;
-    el.textContent = exportPS1();
+  // Reverse of exportPS1(): turn a wrapped `PS1='…'` string (possibly
+  // typed/pasted by the user directly into the textarea) back into the
+  // bare PS1 code that lives in state.raw. If the input is not in the
+  // export form, returns it untouched so edits to the inner code are
+  // never lost.
+  function unwrapPS1(text) {
+    let cleaned = String(text == null ? '' : text).slice(0, 4096);
+    cleaned = cleaned.replace(/^\s*PS1\s*=\s*/, '');
+    const m = cleaned.match(/^'([\s\S]*)'$/);
+    if (m) cleaned = m[1].replace(/'\\''/g, "'");
+    return cleaned;
   }
 
   function setRawFromTextarea() {
     pushHistory();
     const ta = $('#ps1-raw');
-    state.raw = ta.value;
+    state.raw = unwrapPS1(ta.value);
     state.cursor = ta.selectionStart ?? state.raw.length;
     renderPreview(state.raw);
-    refreshExportPreview();
     saveRaw();
   }
 
@@ -473,11 +477,15 @@
 
   function syncFromState() {
     const ta = $('#ps1-raw');
-    ta.value = state.raw;
+    // Always show the wrapped shell-ready form so the user can copy from
+    // the textarea itself; state.raw stays the bare PS1 code.
+    ta.value = exportPS1();
     ta.focus();
-    try { ta.setSelectionRange(state.cursor, state.cursor); } catch (_) { /* ignore */ }
+    try {
+      const start = Math.min(state.cursor, ta.value.length);
+      ta.setSelectionRange(start, start);
+    } catch (_) { /* ignore */ }
     renderPreview(state.raw);
-    refreshExportPreview();
   }
 
   async function copyRaw() {
@@ -671,9 +679,8 @@
     // boot
     state.raw    = loadRaw();
     state.cursor = state.raw.length;
-    raw.value    = state.raw;
+    raw.value    = exportPS1();
     renderPreview(state.raw);
-    refreshExportPreview();
 
     // chips
     document.querySelectorAll('.chip').forEach((chip) => {
