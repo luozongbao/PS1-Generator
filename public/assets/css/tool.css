@@ -234,6 +234,24 @@
   resize: vertical;
 }
 
+#ps1-export-preview {
+  margin: var(--space-1) 0 var(--space-2);
+  word-break: break-all;
+}
+#ps1-export-preview .export-prefix {
+  color: var(--fg-muted);
+}
+#ps1-export-preview code {
+  background: var(--code-bg);
+  color: var(--fg-text);
+  padding: 1px 6px;
+  border-radius: var(--radius-chip);
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+  /* long PS1s (e.g. nested git-branch subshells) wrap cleanly */
+  word-break: break-all;
+}
+
 .controls {
   display: flex;
   gap: var(--space-2);

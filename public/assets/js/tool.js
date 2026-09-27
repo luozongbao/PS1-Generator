@@ -428,12 +428,33 @@
 
   // ---------- textarea mutations ----------
 
+  // Wrap the inner PS1 code as a ready-to-paste shell assignment.
+  // The single-quoted form prevents the shell from interpreting the
+  // backslash-escapes, so the user can paste PS1='…' straight into a
+  // terminal without any further escaping.
+  function exportPS1() {
+    const raw = state.raw || '';
+    // Collapse any embedded single quotes: end-quote, escaped quote, reopen.
+    // ' -> '\''
+    const safe = raw.replace(/'/g, "'\\''");
+    return `PS1='${safe}'`;
+  }
+
+  // Keep the small "Copy emits: PS1='…'" hint in sync with state.raw so
+  // users see the wrapped form before they click Copy.
+  function refreshExportPreview() {
+    const el = document.getElementById('ps1-export-preview-code');
+    if (!el) return;
+    el.textContent = exportPS1();
+  }
+
   function setRawFromTextarea() {
     pushHistory();
     const ta = $('#ps1-raw');
     state.raw = ta.value;
     state.cursor = ta.selectionStart ?? state.raw.length;
     renderPreview(state.raw);
+    refreshExportPreview();
     saveRaw();
   }
 
@@ -456,19 +477,21 @@
     ta.focus();
     try { ta.setSelectionRange(state.cursor, state.cursor); } catch (_) { /* ignore */ }
     renderPreview(state.raw);
+    refreshExportPreview();
   }
 
   async function copyRaw() {
+    const payload = exportPS1();
     try {
-      await navigator.clipboard.writeText(state.raw);
-      flash('Copied to clipboard');
+      await navigator.clipboard.writeText(payload);
+      flash('Copied PS1=\'…\' to clipboard');
     } catch (_) {
       const ta = $('#ps1-raw');
       ta.focus();
       ta.select();
       try {
         const ok = document.execCommand('copy');
-        flash(ok ? 'Copied (fallback)' : 'Copy failed — select & copy manually');
+        flash(ok ? 'Copied PS1=\'…\' (fallback)' : 'Copy failed — select & copy manually');
       } catch (_) {
         flash('Copy failed — select & copy manually');
       }
@@ -598,8 +621,17 @@
   }
 
   function importRaw(raw) {
-    const cleaned = String(raw == null ? '' : raw).slice(0, 4096);
+    let cleaned = String(raw == null ? '' : raw).slice(0, 4096);
     if (!cleaned) { flash('Nothing to import'); return; }
+    // Strip a leading "PS1=" or "PS1 = " if the user pasted the export form
+    // back in, then drop matching outer single quotes if present.
+    // Use a non-anchored strip — preserves any leading/trailing whitespace
+    // INSIDE the actual PS1 code (e.g. trailing space before $ prompt).
+    cleaned = cleaned.replace(/^\s*PS1\s*=\s*/, '');
+    const m = cleaned.match(/^'([\s\S]*)'$/);
+    if (m) {
+      cleaned = m[1].replace(/'\\''/g, "'");
+    }
     pushHistory();
     state.raw = cleaned;
     state.cursor = cleaned.length;
@@ -641,6 +673,7 @@
     state.cursor = state.raw.length;
     raw.value    = state.raw;
     renderPreview(state.raw);
+    refreshExportPreview();
 
     // chips
     document.querySelectorAll('.chip').forEach((chip) => {
