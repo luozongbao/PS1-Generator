@@ -81,6 +81,10 @@
   color: var(--accent);
   font-family: var(--font-mono);
   min-width: 2.5ch;
+  /* Long subshells (e.g. git-branch) wrap cleanly into the row
+     instead of pushing the chip wider than the palette column. */
+  word-break: break-all;
+  font-size: 0.85rem;
 }
 .chip-label {
   color: var(--fg-muted);
@@ -126,6 +130,27 @@
 .swatch.bold[aria-pressed="true"] {
   border-color: var(--accent);
   box-shadow: 0 0 0 1px var(--accent);
+}
+
+/* 010 — Colors block sitting inside the stage column, above the
+   live preview. Padded so the FG/BG/Style rows breathe, and the
+   helper text below explains the toggle behaviour. */
+.colors-block {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.colors-block .color-row {
+  padding-left: 0;       /* the panel already has horizontal padding */
+}
+.colors-hint {
+  margin: var(--space-1) 0 0;
+  color: var(--fg-muted);
+}
+.subshells-hint {
+  margin: var(--space-1) var(--space-3) 0;
 }
 
 /* ---- stage (right pane) ---- */

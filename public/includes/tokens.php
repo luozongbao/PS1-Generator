@@ -41,16 +41,34 @@ $PS1_TOKEN_VERSION  = (int)($PS1_TOKENS_DATA['version'] ?? 0);
 unset($PS1_TOKENS_JSON, $PS1_TOKENS_DATA);
 
 /**
+ * Curated mockup values displayed by the live preview so the demo page
+ * reads cleanly regardless of where it runs. The current real values
+ * are still returned under `_real` for users who want to flip back.
+ *
+ * These mirror the `example` field for `\u \h \H \w \W` in
+ * data/tokens.json (Issue 010).
+ *
+ * Issue 010.
+ */
+const PS1_RUNTIME_MOCKUP = [
+    'user'     => 'username',
+    'host'     => 'hostname',
+    'hostFqdn' => 'host.com',
+    'cwd'      => '/var/www/',
+    'home'     => '/home/username',
+];
+
+/**
  * Build the runtime environment used by the live-preview resolver in
- * tool.js. Mirrors what Bash would expose at prompt-eval time:
+ * tool.js. By default the values shown in the preview are curated
+ * mockups (PS1_RUNTIME_MOCKUP). The real host values are preserved
+ * under the `_real` key so a future toggle can surface them again.
  *
- *   user, host (short), hostFqdn — from get_current_user / gethostname
- *   cwd, home                    — from getcwd / getenv('HOME')
- *   uid                          — from posix_getuid if available
+ * Returns:
+ *   user, host (short), hostFqdn, cwd, home, uid, history, jobs — display
+ *   _real                                       — actual host values
  *
- * Values are HTML-escaped and JSON-encoded for safe inline emission.
- *
- * Issue 009.
+ * Issue 009 + 010 (mockup promotion).
  */
 function ps1_runtime_for_js(): array {
     $user = get_current_user();
@@ -74,17 +92,28 @@ function ps1_runtime_for_js(): array {
     $cwd  = (string) (getcwd() ?: '/');
     $home = (string) (getenv('HOME') ?: ($uid === 0 ? '/root' : '/home/' . $user));
 
-    return [
+    $real = [
         'user'     => $user,
         'host'     => $hostShort,
         'hostFqdn' => $hostFull,
         'cwd'      => $cwd,
         'home'     => $home,
         'uid'      => $uid,
-        // Placeholders — we don't track history or jobs.
-        'history'  => 42,
-        'jobs'     => 0,
     ];
+
+    return array_merge(
+        PS1_RUNTIME_MOCKUP,
+        [
+            // uid, history, and jobs are non-cosmetic — they are not part
+            // of the curated mockup display set. `uid` drives the literal
+            // prompt character (`$` vs `#`); history/jobs are placeholders
+            // because the browser does not track a Bash session.
+            'uid'     => $uid,
+            'history' => 42,
+            'jobs'    => 0,
+            '_real'   => $real,
+        ]
+    );
 }
 
 /**

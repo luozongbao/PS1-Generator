@@ -4,7 +4,7 @@ $extraCss = ['/assets/css/tool.css'];
 require __DIR__ . '/includes/header.php';
 require __DIR__ . '/includes/tokens.php';
 
-$groupOrder = ['Identity', 'Path', 'Time', 'Status', 'Layout'];
+$groupOrder = ['Identity', 'Path', 'Time', 'Status', 'Layout', 'Subshells'];
 $byGroup = [];
 foreach ($PS1_TOKENS as $t) {
     $byGroup[$t['group']][] = $t;
@@ -32,6 +32,12 @@ $defaultPS1 = '\u@\h:\w\$ ';
             <span class="caret" aria-hidden="true">&#9662;</span>
             <?= htmlspecialchars($g, ENT_QUOTES, 'UTF-8') ?>
           </button>
+          <?php if ($g === 'Subshells'): ?>
+            <p class="muted small subshells-hint">
+              Subshells run in your terminal &mdash; the preview shows a
+              styled placeholder, not a real value.
+            </p>
+          <?php endif; ?>
           <ul class="palette-list">
             <?php foreach ($items as $t): ?>
               <li>
@@ -46,12 +52,12 @@ $defaultPS1 = '\u@\h:\w\$ ';
           </ul>
         </section>
       <?php endforeach; ?>
+    </aside>
 
-      <section class="palette-group">
-        <button type="button" class="group-toggle" aria-expanded="true">
-          <span class="caret" aria-hidden="true">&#9662;</span>
-          Colors
-        </button>
+    <!-- RIGHT: preview + raw + controls -->
+    <section class="stage">
+      <h2 class="stage-title">Colors</h2>
+      <div class="colors-block" aria-label="Foreground and background colors">
         <div class="color-row">
           <span class="muted small">FG:</span>
           <?php foreach ($PS1_COLORS['fg'] as $c): ?>
@@ -70,13 +76,17 @@ $defaultPS1 = '\u@\h:\w\$ ';
                     style="background:<?= htmlspecialchars($c['hex'] ?? '#888888', ENT_QUOTES, 'UTF-8') ?>"></button>
           <?php endforeach; ?>
         </div>
-        <button type="button" class="swatch bold" data-bold="1"
-                aria-pressed="false">Bold</button>
-      </section>
-    </aside>
+        <div class="color-row">
+          <span class="muted small">Style:</span>
+          <button type="button" class="swatch bold" data-bold="1"
+                  aria-pressed="false">Bold</button>
+        </div>
+        <p class="muted small colors-hint">
+          Click a swatch to apply it to the next token you insert.
+          Click the active swatch again to clear it.
+        </p>
+      </div>
 
-    <!-- RIGHT: preview + raw + controls -->
-    <section class="stage">
       <h2 class="stage-title">Live preview</h2>
       <pre class="ps1-preview" id="ps1-preview"
            aria-live="polite"><?= htmlspecialchars($defaultPS1, ENT_QUOTES, 'UTF-8') ?></pre>

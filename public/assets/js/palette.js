@@ -4,11 +4,11 @@
 window.PS1_PALETTE = {
   version: 1,
   tokens: [
-    { code: "\\u", label: "Username",                    group: "Identity", description: "The current user's login name.",                                      example: "alice" },
-    { code: "\\h", label: "Hostname (short)",            group: "Identity", description: "Hostname up to the first dot.",                                       example: "laptop" },
-    { code: "\\H", label: "Hostname (FQDN)",             group: "Identity", description: "Fully-qualified hostname.",                                           example: "laptop.example.com" },
-    { code: "\\w", label: "Current working dir (full)",  group: "Path",     description: "Full path of the current working directory, with ~ for $HOME.",     example: "~/projects/ps1-generator" },
-    { code: "\\W", label: "Current working dir (basename)", group: "Path", description: "Basename of the current working directory only.",                   example: "ps1-generator" },
+    { code: "\\u", label: "Username",                    group: "Identity", description: "The current user's login name.",                                      example: "username" },
+    { code: "\\h", label: "Hostname (short)",            group: "Identity", description: "Hostname up to the first dot.",                                       example: "hostname" },
+    { code: "\\H", label: "Hostname (FQDN)",             group: "Identity", description: "Fully-qualified hostname.",                                           example: "host.com" },
+    { code: "\\w", label: "Current working dir (full)",  group: "Path",     description: "Full path of the current working directory, with ~ for $HOME.",     example: "/var/www/" },
+    { code: "\\W", label: "Current working dir (basename)", group: "Path", description: "Basename of the current working directory only.",                   example: "www" },
     { code: "\\d", label: "Date",                        group: "Time",     description: "Date in 'Mon Jan 02' format.",                                        example: "Sun Sep 27" },
     { code: "\\t", label: "Time 24h HH:MM:SS",           group: "Time",     description: "24-hour time with seconds.",                                          example: "14:35:09" },
     { code: "\\T", label: "Time 12h HH:MM:SS",           group: "Time",     description: "12-hour time with seconds.",                                          example: "02:35:09" },
@@ -20,7 +20,8 @@ window.PS1_PALETTE = {
     { code: "\\n", label: "Newline",                     group: "Layout",   description: "Inserts a line break in the prompt.",                                 example: "(line break)" },
     { code: "\\\\", label: "Literal backslash",          group: "Layout",   description: "Outputs a single backslash character.",                                example: "\\" },
     { code: "\\[", label: "Non-printing open",           group: "Layout",   description: "Begins a sequence of non-printing characters (e.g. color escapes). Wrap every ANSI escape in \\[ ... \\] so Bash counts the prompt correctly.", example: "\\[\\e[32m\\]" },
-    { code: "\\]", label: "Non-printing close",          group: "Layout",   description: "Ends a sequence of non-printing characters begun by \\[.",            example: "\\]" }
+    { code: "\\]", label: "Non-printing close",          group: "Layout",   description: "Ends a sequence of non-printing characters begun by \\].",            example: "\\]" },
+    { code: "$(b=$(git symbolic-ref --short HEAD 2>/dev/null); [[ -n \"$b\" ]] && printf \" (%s)\" \"$b\")", label: "Git branch",         group: "Subshells", description: "Inserts the current Git branch in parentheses when inside a Git working tree; empty elsewhere. Runs in your shell, so the value is a placeholder in the preview.", example: "(main)" }
   ],
   colors: {
     fg: [
