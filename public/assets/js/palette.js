@@ -1,0 +1,47 @@
+// palette.js — JS mirror of public/data/tokens.json.
+// MUST stay in sync with that file. Adding a token requires editing BOTH.
+// Verified by issue 008 lint.
+window.PS1_PALETTE = {
+  version: 1,
+  tokens: [
+    { code: "\\u", label: "Username",                    group: "Identity", description: "The current user's login name.",                                      example: "alice" },
+    { code: "\\h", label: "Hostname (short)",            group: "Identity", description: "Hostname up to the first dot.",                                       example: "laptop" },
+    { code: "\\H", label: "Hostname (FQDN)",             group: "Identity", description: "Fully-qualified hostname.",                                           example: "laptop.example.com" },
+    { code: "\\w", label: "Current working dir (full)",  group: "Path",     description: "Full path of the current working directory, with ~ for $HOME.",     example: "~/projects/ps1-generator" },
+    { code: "\\W", label: "Current working dir (basename)", group: "Path", description: "Basename of the current working directory only.",                   example: "ps1-generator" },
+    { code: "\\d", label: "Date",                        group: "Time",     description: "Date in 'Mon Jan 02' format.",                                        example: "Sun Sep 27" },
+    { code: "\\t", label: "Time 24h HH:MM:SS",           group: "Time",     description: "24-hour time with seconds.",                                          example: "14:35:09" },
+    { code: "\\T", label: "Time 12h HH:MM:SS",           group: "Time",     description: "12-hour time with seconds.",                                          example: "02:35:09" },
+    { code: "\\@", label: "Time 12h am/pm",              group: "Time",     description: "12-hour time, am/pm, no seconds.",                                    example: "02:35 PM" },
+    { code: "\\A", label: "Time 24h HH:MM",              group: "Time",     description: "24-hour time, no seconds.",                                           example: "14:35" },
+    { code: "\\$", label: "Prompt char",                 group: "Status",   description: "Hash for root, dollar sign otherwise.",                               example: "$" },
+    { code: "\\!", label: "History number",              group: "Status",   description: "The current command's history line number.",                          example: "42" },
+    { code: "\\j", label: "Background jobs",             group: "Status",   description: "Number of background jobs managed by the shell.",                     example: "0" },
+    { code: "\\n", label: "Newline",                     group: "Layout",   description: "Inserts a line break in the prompt.",                                 example: "(line break)" },
+    { code: "\\\\", label: "Literal backslash",          group: "Layout",   description: "Outputs a single backslash character.",                                example: "\\" },
+    { code: "\\[", label: "Non-printing open",           group: "Layout",   description: "Begins a sequence of non-printing characters (e.g. color escapes). Wrap every ANSI escape in \\[ ... \\] so Bash counts the prompt correctly.", example: "\\[\\e[32m\\]" },
+    { code: "\\]", label: "Non-printing close",          group: "Layout",   description: "Ends a sequence of non-printing characters begun by \\[.",            example: "\\]" }
+  ],
+  colors: {
+    fg: [
+      { name: "Black",   value: 30, hex: "#0f1115" },
+      { name: "Red",     value: 31, hex: "#ff6b6b" },
+      { name: "Green",   value: 32, hex: "#4ade80" },
+      { name: "Yellow",  value: 33, hex: "#facc15" },
+      { name: "Blue",    value: 34, hex: "#60a5fa" },
+      { name: "Magenta", value: 35, hex: "#c084fc" },
+      { name: "Cyan",    value: 36, hex: "#22d3ee" },
+      { name: "White",   value: 37, hex: "#e6e8eb" }
+    ],
+    bg: [
+      { name: "Black",   value: 40, hex: "#0f1115" },
+      { name: "Red",     value: 41, hex: "#ff6b6b" },
+      { name: "Green",   value: 42, hex: "#4ade80" },
+      { name: "Yellow",  value: 43, hex: "#facc15" },
+      { name: "Blue",    value: 44, hex: "#60a5fa" },
+      { name: "Magenta", value: 45, hex: "#c084fc" },
+      { name: "Cyan",    value: 46, hex: "#22d3ee" },
+      { name: "White",   value: 47, hex: "#e6e8eb" }
+    ]
+  }
+};
